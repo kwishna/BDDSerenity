@@ -1,0 +1,1763 @@
+public class MathWizSteps {
+
+    String actor;                               
+
+    @Step("#actor starts with {0}")             
+    public void startsWith(int amount) {
+        // TODO
+    }
+
+    @Step("#actor adds {0}")
+    public void adds(int amount) {
+        // TODO
+    }
+
+    @Step("#actor should have {0}")
+    public void shouldHave(int expectedTotal) {
+        // TODO
+    }
+}
+
+Each method has a @Step annotation. These tell Serenity to add a corresponding entry in the test report whenever this method is called
+The text in the annotation (such as "#actor starts with {0}") tells Serenity how to render the step. Any fields with the "#" prefix
+will be rendered (so #actor will be replaced by the value of the actor field).
+Any parameters can be reported using positional variables ({0} for the first parameter, {1} for the second, and so forth).
+
+Ex.
+@Step
+public void adds(int amount) {...}
+This will be rendered as "adds: 2"
+
+@Pending Means Test Case Is Pending. Hence, Report Will Be Generated As Pending.
+
+Example :-
+:: User Class With All The Methods ::
+public class User {
+
+	public void wakesUpInTheMorning() {
+		
+		System.out.println(":: Wakes Up In The Morning.");
+	}
+	
+	public void brushingTeeth() {
+		
+		System.out.println(":: Brushing Teeth.");
+	}
+	
+	public void bathing() {
+		
+		System.out.println(":: Bathing");
+	}
+	
+	public void gettingPreparedForTheOffice() {
+		
+		System.out.println(":: Getting Prepared For The Office");
+	}
+	
+	public void callingCab() {
+		
+		System.out.println(":: Calling Cab");
+	}
+	
+	public void reachedOffice() {
+		
+		System.out.println(":: Just Reached The Office");
+	}
+	
+	public void writingCodes() {
+		
+		System.out.println(":: Writing Codes");
+	}
+}
+
+:: Step File ::
+public class StepFile {
+	
+	User user = new User();
+	String MrModi = "Narendra Modi";
+	
+	@Step("#MrModi First Step") // This Will Be Added In Serenity Report. Tells Serenity,
+	// what to write in the reports when this step is executed. If you don’t write, the name of the method will be used instead
+	public void FirstStep() {
+	
+		user.wakesUpInTheMorning();
+	}
+	
+	@Step("#MrModi Second Step") // #MrModi Will Be Replaced With Its Value In The Report
+	public void SecondStep() {
+	
+		user.brushingTeeth();
+	}
+	
+	@Step("#actor should have {0} points") // {0} Represents Parameter
+    public void should_have_points(int expectedPoints) {
+     
+    }
+	
+	@Step("#MrModi Third Step")
+	public void ThirdStep() {
+	
+		user.bathing();
+	}
+	
+	@Step("#MrModi Four Step")
+	public void FourStep() {
+	
+		user.gettingPreparedForTheOffice();
+	}
+	
+	@Step("#MrModi Fifth Step")
+	public void FifthStep() {
+	
+		user.callingCab();
+	}
+	
+	@Step("#MrModi Sixth Step")
+	public void SixthStep() {
+	
+		user.reachedOffice();
+	}
+	
+	@Step("#MrModi Seventh Step")
+	public void SeventhStep() {
+	
+		user.writingCodes();
+	}
+
+}
+
+:: Runner Class ::
+
+@RunWith(SerenityRunner.class)
+public class Runner2 {
+	
+	@Steps // Steps Annotation To Create Object Automatically. If We Create By New Keyword. It Wont Appear In Report
+	StepFile file;
+	
+	@Steps(shared = true) / Or, @Shared
+						 // When we might want to reuse a single instance of this step library. 
+						// Rather than having a separate instance for each variable.
+	CustomerAPIStepLibrary customerAPI;
+	
+	@Test
+	public void firstTestCase() {
+	
+		file.FirstStep();
+		file.SecondStep();
+		file.ThirdStep();
+	}
+	
+	@Test
+	public void SecondTestCase() {
+	
+		file.FourStep();
+		file.FifthStep();
+		file.SixthStep();
+		file.SeventhStep();
+	}
+	
+	@Pending // To Keep The Implementation Pending In Report As Well
+	public void SecondTestThree() {
+	
+	}
+}
+
+--------------------------------------------------------------------------
+Selenium With Serenity :-
+
+Serenity versions are tied to Selenium versions, and the latest version of Serenity almost always uses the latest version of WebDriver.
+For this reason, it is usually easier to include only a dependency on serenity-core, and let Serenity pull in the Selenium dependency it works with
+
+It takes care of creating WebDriver instances, and of opening and closing the browser for you.
+
+Ex:
+@RunWith(SerenityRunner.class)                                              
+public class WhenWritingWebTestsInSerenity {
+
+    @Managed                                                            
+    WebDriver driver; // @Managed annotation to declare a Serenity-managed WebDriver instance
+
+    @Test
+    public void shouldInstantiateAWebDriverInstanceForAWebTest() {
+        driver.get("http://www.google.com");                                
+
+        driver.findElement(By.name("q")).sendKeys("firefly", Keys.ENTER);
+
+        new WebDriverWait(driver,5).until(titleContains("firefly - Google"));
+
+        assertThat(driver.getTitle()).contains("firefly - Google");
+    }                                                                      
+}
+------------------------------------------------------------------------------------------
+To benefit from the Serenity WebDriver integration, you need to run your test as a Serenity test
+You use the @Managed annotation to declare a Serenity-managed WebDriver instance
+Serenity will create the driver instance and open the browser the first time you use the Serenity-managed instance
+At the end of the test, Serenity will close the browser and shut down the driver
+
+Do all the configuration you need using the Serenity system properties file.
+
+The most fundamental property is the webdriver.driver. This tells Serenity which browser to use. You can configure this in several locations.
+
+You can add the webdriver.driver property to your serenity.properties file in the root of your project, e.g.
+webdriver.driver=chrome
+
+You can also create a serenity.conf file, which uses the Typesafe Config notation, and add this to your classpath (for example in src/test/resources).
+webdriver {
+    driver=chrome
+}
+
+Using the command line
+You can override the driver specified in the properties or configuration file from the command line. For Maven, you would use the -D option, e.g.
+mvn clean verify -Dwebdriver.driver=firefox
+
+For Gradle, you use the -P option:
+gradle clean test -Pwebdriver.driver=firefox
+
+Using the @Managed annotation
+If you always need a test to be run with a particular browser, and you are using JUnit, you can use the browser option in the @Managed annotation, e.g.
+@Managed(driver = "firefox")
+WebDriver driver;
+
+The Managed annotation take priority over driver values passed in on the command line.
+
+If you are using Cucumber or JBehave, you can override the driver for a particular feature or scenario by using the @driver tag, e.g.
+@driver:chrome
+Feature: Completing todos
+
+In JBehave, you can use the Meta tag instead:
+Meta:
+@driver chrome
+-------------------------------------------------------------------------------------------
+your serenity.properties file might contain the driver path. like following:
+webdriver.gecko.driver=/path/to/my/geckodriver
+
+Serenity allows you to pass driver-specific properties to a driver, as long as they are prefixed with drivers.<os>.
+For example, the following line will configure the webdriver.chrome.driver
+drivers.windows.webdriver.chrome.driver = src/test/resources/webdriver/windows/chromedriver.exe
+
+Or in the serenity.conf file, you can put:
+drivers {
+  windows {
+    webdriver.chrome.driver = src/test/resources/webdriver/windows/chromedriver.exe
+  }
+  mac {
+    webdriver.chrome.driver = src/test/resources/webdriver/mac/chromedriver
+  }
+  linux {
+    webdriver.chrome.driver = src/test/resources/webdriver/linux/chromedriver
+  }
+}
+
+------------------------------------------------------------------------------------------------
+When you create a ChromeDriver instance by hand, you can pass in arguments to the ChromeDriver using the addArguments() method:
+
+ChromeOptions options = new ChromeOptions();
+options.addArguments("--no-first-run");
+options.addArguments("--homepage=about:blank");
+options.addArguments("--test-type");
+In Serenity, the —test-type switch is provided automatically. For the others, you would pass them in using the chrome.switches property, e.g.
+
+chrome.switches=--homepage=about:blank,--no-first-run
+-------------
+You can also provide more advanced options using the setExperimentalOption() method:
+
+Map<String, Object> chromePrefs = new HashMap<String, Object>();
+chromePrefs.put("download.default_directory", downLoadDirectory);
+chromePrefs.put("profile.default_content_settings.popups", 0);
+chromePrefs.put("pdfjs.disabled", true);
+ChromeOptions options = new ChromeOptions();
+options.setExperimentalOption("prefs", chromePrefs);
+
+In Serenity, you would pass these using properties prefixed with the chrome_preferences prefix, e.g.
+
+chrome_preferences.download.default_directory = /my/download/directory
+chrome_preferences.profile_default_content_settings.popups = 0
+chrome_preferences.pdfjs.disabled=true
+If you are using the TypeSafe configuration file format, you could write the following:
+
+chrome_preferences {
+    download.default_directory = /my/download/directory
+    profile_default_content_settings.popups = 0
+}
+------------
+You can also add custom capabilities like this:
+
+DesiredCapabilities cap = DesiredCapabilities.chrome();
+cap.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);
+cap.setCapability(CapabilityType.SUPPORTS_ALERTS, true);
+Serenity lets you pass arbitrary capability properties to the Chrome driver using the chrome.capabilities. prefix, e.g
+
+chrome.capabilities.acceptSslCerts = true
+chrome.capabilities.handlesAlerts = true
+Or using the Typesafe Config format:
+
+chrome {
+    capabilities {
+        acceptSslCerts = true
+        handlesAlerts = true
+    }
+}
+--------------
+property can be set using the gecko.firefox.options property, e.g.
+
+gecko.firefox.options="{log: {level: trace}}"
+You can add more complete JSON configuratio options in the serenity.conf file, as shown in the example below:
+
+gecko.firefox.options="""
+{
+    args": ["-headless", "-profile", "/path/to/my/profile"],
+    "prefs": {
+        "dom.ipc.processCount": 8
+    },
+    "log": {
+        "level": "trace"
+    }
+}
+"""
+
+----------------
+You can set proxy settings with any driver by using the serenity.proxy.* properties:
+
+serenity.proxy.http - The HTTP proxy address
+serenity.proxy.user - The proxy username
+serenity.proxy.password - The proxy password
+serenity.proxy.ssl - the SSL Proxy configuration
+serenity.proxy.sslProxyPort - the SSL Proxy port configuration
+
+-----------------
+The serenity.restart.browser.for.each property allows you to fine-tune when the browser will be restarted. The possible values are:
+
+scenario
+story or feature
+never
+-----------------
+you may which the tests to run more slowly than they normally do. You can use the serenity.step.delay property for this.
+This is the time in milliseconds (0 by default) that Serenity will pause between each step.
+------------------
+You can add arbitrary capabilities to the WebDriver driver by using the serenity.driver.capabilities property, as shown below:
+serenity.driver.capabilities="browserName:iphone; deviceName:iPad Retina; version:9.2"
+--------------------------------------------------------------------------------------------------------------------------------
+Page Object :-
+
+In Serenity, page objects are just ordinary classes that extend the PageObject class. Serenity automatically injects a 
+WebDriver instance into the page object that you can access via the getDriver() method, although you rarely need to use the 
+WebDriver directly. The Serenity PageObject class provides a number of convenient methods that make accessing and manipulating
+web elements much easier than with conventional WebDriver test scripts.
+
+Ex.
+
+@DefaultUrl("http://localhost:9000/somepage")
+public class FindAJobPage extends PageObject {
+
+    WebElementFacade keywords;
+    WebElementFacade searchButton;
+
+    public void look_for_jobs_with_keywords(String values) {
+        typeInto(keywords, values);
+        searchButton.click();
+    }
+}
+
+The typeInto method is a shorthand that simply clears a field and enters the specified text.
+Ex2.
+@DefaultUrl("http://localhost:9000/somepage")
+public class FindAJobPage extends PageObject {
+	WebElementFacade keywordsField;
+	WebElementFacade searchButton;
+
+	public FindAJobPage(WebDriver driver) {
+	    super(driver);
+	}
+
+	public void look_for_jobs_with_keywords(String values) {
+	    enter(values).into(keywordsField);
+	    searchButton.click();
+	}
+
+	public List<String> getJobTabs() {
+	    List<WebElementFacade> tabs = findAll("//div[@id='tabs']//a");
+	    return extract(tabs, on(WebElement.class).getText());
+	}
+}
+
+----------
+find(By.name("demo")).then(By.name("specialField")).getValue();
+
+find(By.cssSelector(".foo")).getValue();
+
+find(By.xpath("//th")).getValue();
+The findBy method lets you pass the css or xpath selector directly to WebDriver. For example,
+
+findBy("#demo").then("#specialField").getValue(); //css selectors
+
+findBy("//div[@id='dataTable']").getValue(); //xpath selector
+----------
+When you need to useIf you want to make sure you are on the right page, you can use the currentPageAt() method. This will check the page class for any @At annotations present in the PageObject class and, if present, check that the current URL corresponds to the URL pattern specified in the annotation. For example, when you invoke it using currentPageAt(), the following Page Object will check that the current URL is precisely http://www.apache.org.
+
+@At("http://www.apache.org")
+public class ApacheHomePage extends PageObject {
+    ...
+}
+The @At annotation also supports wildcards and regular expressions. The following page object will match any Apache sub-domain:
+
+@At("http://.*.apache.org")
+public class AnyApachePage extends PageObject {
+    ...
+} a page object in one of your steps, you just need to declare a variable of type PageObject in your step library, e.g.
+FindAJobPage page;
+
+------------
+A page object is usually designed to work with a particular web page. When the open() method is invoked, the browser will be opened to the default URL for the page.
+The @DefaultUrl annotation indicates the URL that this test should use when run in isolation (e.g. from within your IDE).
+Generally, however, the host part of the default URL will be overridden by the webdriver.base.url property, as this allows you to 
+set the base URL across the board for all of your tests, and so makes it easier to run your tests on different environments by simply changing this property value
+
+@DefaultUrl("http://jira.mycompany.org")
+@NamedUrls(
+  {
+    @NamedUrl(name = "open.issue", url = "http://jira.mycompany.org/issues/{1}")
+  }
+)
+
+public class JiraIssuePage extends PageObject {
+	.....
+    page.open("open.issue", withParameters("ISSUE-1"));
+	.....
+}
+
+--------------------------------------
+If you need your page to do something upon loading, such as waiting for a dynamic element to appear, 
+you can use the @WhenPageOpens annotation. Methods in the PageObject with this annotation will be invoked 
+(in an unspecified order) after the URL has been opened. In this example, the open() method will not return 
+until the dataSection web element is visible:
+
+@DefaultUrl("http://localhost:8080/client/list")
+    public class ClientList extends PageObject {
+
+     @FindBy(id="data-section");
+     WebElementFacade dataSection;
+     ...
+
+     @WhenPageOpens
+     public void waitUntilTitleAppears() {
+         element(dataSection).waitUntilVisible();
+     }
+}
+--------------------------------------------
+searchButton.isVisible(); :: Waits For Visibility For Some Time
+searchButton.isCurrentlyVisible(); :: Doesn't Wait At All
+searchButton.shouldBeVisible(); :: Assertion Error If Not Visible
+
+searchButton.isEnabled()
+searchButton.shouldBeEnabled()
+
+searchButton.shouldNotBeVisible();
+searchButton.shouldNotBeCurrentlyVisible();
+searchButton.shouldNotBeEnabled();
+
+searchButton.isPresent();
+searchButton.isNotPresent();
+searchButton.shouldBePresent();
+searchButton.shouldNotBePresent();
+
+firstName.hasFocus()
+
+button.waitUntilEnabled()
+button.waitUntilDisabled()
+
+field.waitUntilVisible()
+button.waitUntilNotVisible()
+waitForAbsenceOf(#id).withTimeoutOf(Duration.ofSeconds(10))
+
+---------------------------------------------
+<select id="color">
+    <option value="red">Red</option>
+    <option value="blue">Blue</option>
+    <option value="green">Green</option>
+</select>
+
+	@FindBy(id="color")
+	WebElementFacade colorDropdown;
+
+	public selectDropdownValues() {
+	    colorDropdown.selectByVisibleText("Blue");
+	    assertThat(colorDropdown.getSelectedVisibleTextValue(), is("Blue"));
+
+	    colorDropdown.selectByValue("blue");
+	    assertThat(colorDropdown.getSelectedValue(), is("blue"));
+
+	    colorDropdown.selectByIndex(2);
+	    assertThat(colorDropdown.getSelectedValue(), is("green"));
+
+	}
+	
+----------------------------------------------------
+Another way to access a web element is to use an XPath or CSS expression. 
+You can use the $() method with an XPath expression to do this more simply.
+	
+first option is to use the isElementVisible method, which returns a boolean value 
+based on whether the element is rendered (visible to the user) or not:
+
+isElementVisible(By.xpath("//h2[.='A visible title']"))
+
+Your second option is to actively assert that the element should be visible:
+shouldBeVisible(By.xpath("//h2[.='An invisible title']"));
+
+If the element does not appear immediately, you can wait for it to appear:
+waitForRenderedElements(By.xpath("//h2[.='A title that is not immediately visible']"));
+
+An alternative to the above syntax is to use the more fluid waitFor method which takes a css or xpath selector as argument:
+waitFor("#popup"); //css selector
+waitFor("//h2[.='A title that is not immediately visible']"); //xpath selector	
+	
+If you just want to check if the element is present though not necessarily visible, you can use waitForRenderedElementsToBePresent :
+waitForRenderedElementsToBePresent(By.xpath("//h2[.='A title that is not immediately visible']"))
+	
+Its more expressive flavour, waitForPresenceOf which takes a css or xpath selector as argument.
+waitForPresenceOf("#popup"); //css
+waitForPresenceOf("//h2[.='A title that is not immediately visible']"); //xpath	
+	
+You can also wait for an element to disappear by using waitForRenderedElementsToDisappear or waitForAbsenceOf :
+waitForRenderedElementsToDisappear(By.xpath("//h2[.='A title that will soon disappear']"));
+waitForAbsenceOf("#popup");
+waitForAbsenceOf("//h2[.='A title that will soon disappear']");	
+
+you can also use the waitForTextToAppear and waitForTextToDisappear methods:
+waitForTextToDisappear("A visible bit of text");
+
+If several possible texts may appear, you can use waitForAnyTextToAppear or waitForAllTextToAppear:
+waitForAnyTextToAppear("this might appear","or this", "or even this");
+
+If you need to wait for one of several possible elements to appear, you can also use the waitForAnyRenderedElementOf method:
+waitForAnyRenderedElementOf(By.id("color"), By.id("taste"), By.id("sound"));
+---------------------
+Use the webdriver.timeouts.implicitlywait property. This determines how long, in milliseconds, 
+webDriver will wait if an element it tries to access is not present on the page.
+The default value in Serenity for this property is currently 2 seconds. This is different from standard WebDriver, where the default is zero.
+
+Suppose we set the webdriver.timeouts.implicitlywait value to 5000.
+When we access this field, two things can happen. If the field takes less than 5 seconds to load, all will be good.
+But if it takes more than 5 seconds, a NoSuchElementException (or something similar) will be thrown.
+-----------------
+@FindBy(css="#elements option")
+public List<WebElementFacade> elementItems;
+The number of items returned will depend on the implicit wait value. If we set the webdriver.timeouts.implicitlywait value to a very small value,
+WebDriver may only load some of the values. But if we give the list enough time to load completely, we will get the full list.
+
+The implicit wait value is set globally for each WebDriver instance, but you can override the value yourself.
+The simplest way to do this from within a Serenity PageObject is to use the setImplicitTimeout() method:
+setImplicitTimeout(5, SECONDS)
+
+It also affect other page objects. So once you are done, you should always reset the implicit timeout to its previous value.
+Serenity gives you a handy method to do this:
+resetImplicitTimeout()
+
+-------------------
+
+waitFor(ExpectedConditions.alertIsPresent())
+The default time that Serenity will wait is determined by the webdriver.wait.for.timeout property. The default value for this property is 5 seconds.
+Sometimes you want to give WebDriver some more time for a specific operation. From within a PageObject, you can override or extend the explicit timeout by using the withTimeoutOf() method.
+For example, you could wait for the #elements list to load for up to 5 seconds like this:
+withTimeoutOf(5, SECONDS).waitForPresenceOf(By.cssSelector("#elements option"))
+someButton.withTimeoutOf(5, SECONDS).waitUntilClickable().click()
+elements = withTimeoutOf(5, SECONDS).findAll("#elements option")
+
+you can wait directly on a web element:
+@FindBy(id="share1-fb-like")
+WebElementFacade facebookIcon;
+  ...
+public WebElementState facebookIcon() {
+    return withTimeoutOf(5, TimeUnit.SECONDS).waitFor(facebookIcon);
+}
+
+Or even:
+List<WebElementFacade> currencies = withTimeoutOf(5, TimeUnit.SECONDS)
+                              .waitFor(currencyTab)
+                              .thenFindAll(".currency-code");
+
+
+---------------------------------
+JavaScript ::
+Can use the evaluateJavascript() method of the PageObject class to do.
+String result = (String) evaluateJavascript("return document.title");
+evaluateJavascript("document.getElementById('firstname').focus()");
+
+JQuery ::
+evaluateJavascript("$('#firstname').focus()");
+
+--------------------------------
+Uploading Files ::
+public class NewCompanyPage extends PageObject {
+    ...
+    @FindBy(id="object_logo")
+    WebElementFacade logoField;
+
+    public NewCompanyPage(WebDriver driver) {
+        super(driver);
+    }
+
+    public void loadLogoFrom(String filename) {
+        upload(filename).to(logoField);
+    }
+}
+
+-------------------------------
+A method, switchToPage() is provided in PageObject class to make it convenient to return a new PageObject after navigation from within a method of a PageObject class. For example,
+
+@DefaultUrl("http://mail.acme.com/login.html")
+public class EmailLoginPage extends PageObject {
+
+    public void forgotPassword() {
+        ...
+        forgotPassword.click();
+        ForgotPasswordPage forgotPasswordPage = this.switchToPage(ForgotPasswordPage.class);
+        forgotPasswordPage.open();
+        ...
+    }
+}
+
+----------------------------------
+List<WebElement> ::
+Selenium lets you use the @FindBy and @FindAll annotations to load collections of web elements, as illustrated here:
+@FindBy(css='#colors a')
+List<WebElement> options
+
+Or,
+withTimeoutOf(5, SECONDS).waitForPresenceOf(By.cssSelector("#colors a"))
+
+Or,
+serenity.webdriver.collection_loading_strategy
+There are three options: * Optimistic * Pessimistic (default) * Paranoid
+
+List<WebElementFacade> list = findAll(#id); : Methods Present Inside PageObject Class.
+
+Optimistic will only wait until the field is defined. This is the native Selenium behaviour.
+Pessimistic will wait until at least the first element is displayed. This is currently the default.
+Paranoid will wait until all of the elements are displayed. This can be slow for long lists.
+
+-----------------------------------
+Angular ::
+Sometimes you need to wait until Angular has finished it’s application processing activities before interacting with an element or 
+moving to the next step of a test. You can do this in a Serenity Page Object by calling the waitForAngularRequestsToFinish() method, like this:
+
+waitForAngularRequestsToFinish()
+
+If you are using Screenplay, you can use the WaitUntil class (from the net.serenitybdd.screenplay.waits package), as shown here:
+
+    actor.attemptsTo(
+		Click.on(ADD_TO_CART),
+		WaitUntil.angularRequestsHaveFinished(),
+		Click.on(PURCHASE)
+	)
+--------------------------------
+## https://github.com/paul-hammant/ngWebDriver
+ngWebDriver provides a special ByAngular class that you can use in the place of the Selenium By class,
+and that provides access to a number of Angular-specific locators.	
+Ex.
+public class TodoListApp extends PageObject {
+    public void addTodo(String item) {
+	    find(ByAngular.model("todo")).sendKeys(item, Keys.ENTER);
+	}
+}
+---------
+
+<button>Save</button>
+You can locate this element using the buttonText() method:
+
+    find(ByAngular.buttonText("Save")).click();
+For more flexibility, you can also use the partialButtonText() method.
+
+-------
+
+Suppose you have an Angular app with the following code:
+
+<div id="product">
+  <ul>
+    <li class="colour">Red</li>
+    <li class="colour">Blue</li>
+  </ul>
+</div>
+You could locate the Red entry in this list by using the following code:
+
+    find(ByAngular.cssContainingText("#product .colour", "Red"))
+	
+--------
+
+<li ng-repeat="todo in todos"...>
+ return findAll(ByAngular.repeater("todo in todos"))
+                  .stream()
+			      .map(WebElement::getText)
+			      .collect(Collectors.toList());
+				  
+------------------------------------------------------------------------------------
+Selenium Grid :: RemoteWebDriver
+To run your Serenity tests on a Selenium Grid, you need to provide the URL of the Selenium Hub using the webdriver.remote.url property.
+You may also want to provide more information about how and where you want to run your tests, using the following properties:
+webdriver.remote.driver:: What driver to use remotely ('firefox','chrome','iexplorer' etc.)
+webdriver.remote.browser.version:: What version of the remote browser to use 
+webdriver.remote.os:: What operating system the tests should be run on.
+
+For example, if you were running a Selenium Hub locally on port 4444 (the default),	
+
+mvn verify -Dwebdriver.remote.url=http://localhost:4444/wd/hub -Dwebdriver.remote.driver=chrome -Dwebdriver.remote.os=WINDOWS
+
+------------
+
+If you are running PhantomJS remotely, you may need to specify what port PhantomJS is to run on using the phantomjs.webdriver property.
+mvn verify -Dphantomjs.webdriver=5555 -Dwebdriver.remote.url=http://seleniumgrid:4444/wd/hub
+
+mvn verify -Dwebdriver.remote.url=http://localhost:4444/wd/hub -Dwebdriver.remote.driver=chrome -Dwebdriver.remote.os=WINDOWS 
+-Dchrome.switches="--no-sandbox,--ignore-certificate-errors,--homepage=about:blank,--no-first-run"
+
+-------------------------
+Appium ::
+Android -
+webdriver.driver= appium
+webdriver.base.url = http://www.google.com/
+appium.hub = http://127.0.0.1:4723/wd/hub
+appium.platformName = Android
+appium.platformVersion = 5.1.1
+appium.deviceName = e2f5c460
+appium.browserName = Chrome
+
+iOS -
+webdriver.driver= appium
+webdriver.base.url = http://www.google.com/
+appium.hub = http://127.0.0.1:4723/wd/hub
+appium.platformName = iOS
+appium.platformVersion = 8.1
+appium.deviceName = iPhone 5
+appium.browserName = Safari
+
+Without Setting In Property File :
+mvn test -Dappium.hub=http://127.0.0.1:4723/wd/hub -Dwebdriver.driver=appium -Dappium.platformName=iOS -Dappium.browserName=Safari -Dappium.deviceName="iPhone 5"
+
+appium.automationName=myAutomationName will have as effect setting the capability automationName in the appium driver to myAutomationName
+
+POM :
+@AndroidFindBy(id="")
+private WebElement loginButton;
+
+@iOSFindBy(id="")
+private WebElement loginButton;
+
+@FindBy(accessibilityId="")
+private WebElement loginButton;
+
+
+AndroidDriver<AndroidElement> androidDriver() {
+    return (AndroidDriver<AndroidElement>)
+            ((WebDriverFacade) getDriver()).getProxiedDriver();
+}
+androidDriver().hideKeyboard();
+
+----------------------------
+SauceLabs ::-
+Serenity has special support for running tests on the Cloud-based testing platform SauceLabs.
+The general approach is the same as discussed above, but there are a few extra Saucelabs-specific properties:
+
+saucelabs.url :: Usually of the form http://<my_id>:<my_API Key>@ondemand.saucelabs.com:80/wd/hub
+saucelabs.target.platform :: See https://saucelabs.com/platforms/
+saucelabs.driver.version :: See https://saucelabs.com/platforms/
+saucelabs.test.name :: The name of the test as it will appear on the Saucelabs site
+saucelabs.access.key ::  Your Saucelabs API key, optional, used to generate links to the Saucelabs results
+saucelabs.user.id :: Your Saucelabs User ID, optional, used to generate links to the Saucelabs results 
+saucelabs.record.screenshots :: Saucelabs records screenshots as well as videos by default.Since Serenity also records screenshots, 
+								this feature is disabled by default. It can be reactivated using this system property
+saucelabs.implicit.wait ::: Override the default implicit timeout value for the Saucelabs drive
+
+mvn verify -Dsaucelabs.target.platform=XP -Dwebdriver.driver=chrome -Dsaucelabs.driver.version=26 -Dsaucelabs.url=http://<my_id>:<my_API Key>@ondemand.saucelabs.com:80/wd/hub
+-Dsaucelabs.access.key=<My_API_Key> -Dsaucelabs.user.id=<my_id> -Dwebdriver.base.url=https://www.website.com -Dmaven.test.failure.ignore=true
+
+serenity.driver.capabilities="browserName:iphone; deviceName:iPad Retina; version:9.2"
+--------------------------------------------------------------------------------------------
+BrowserStack ::-
+
+First of all, add the serenity-browserstack dependency to your project:
+<dependency>
+    <groupId>net.serenity-bdd</groupId>
+    <artifactId>serenity-browserstack</artifactId>
+    <version>${serenity.version}</version>
+</dependency>
+
+In your serenity.conf configuration file, add a browserstack section with your BrowserStack username and API key, like this:
+browserstack {
+    user = <your-username>
+    key = <your-api-key>
+    server = hub-cloud.browserstack.com
+    browser = chrome
+}
+
+In the webdriver section, you need to configure a remote driver like this:
+webdriver {
+    driver = remote
+    remote.url = "http://<your-username>:<your-api-key>@hub-cloud.browserstack.com/wd/hub"
+}
+
+
+You can also do the same thing in your serenity.properties file, e.g. ::-
+browserstack.user=<your-username>
+browserstack.key=<your-api-key>
+browserstack.server = hub-cloud.browserstack.com
+browserstack.browser = chrome
+webdriver.driver = remote;
+webdriver.remote.url = "http://<your-username>:<your-api-key>@hub-cloud.browserstack.com/wd/hub"
+
+----------------------------------------
+Retries ::
+https://serenity-bdd.github.io/theserenitybook/latest/remote.html#_retries
+The following system properties are available:
+
+browserstack.url
+BrowserStack Hub URL if running the tests on BrowserStack Cloud
+
+browserstack.os
+OS type (e.g. WINDOWS, OS X)
+
+browserstack.os_version
+OS version (e.g. Windows: XP, 7, 8 and 8.1; OS X: Snow Leopard, Lion, Mountain Lion, Mavericks, Yosemite, El Capitan)
+
+browserstack.browser
+Browser type (e.g. Firefox, Safari, IE, Chrome, Opera)
+
+browserstack.browser_version
+Browser version (defaults to latest stable; check list of available browsers)
+
+browserstack.device
+BrowserStack mobile device name on which tests should be run
+
+browserstack.deviceOrientation
+Set the screen orientation of BrowserStack mobile device (portrait or landscape, default: portrait)
+
+browserstack.project
+Specify a name for a logical group of builds on BrowserStack
+
+browserstack.build
+Specify a name for a logical group of tests on BrowserStack
+
+browserstack.name
+Specify an identifier for the test run on BrowserStack
+
+browserstack.local
+For Testing against internal/local servers on BrowserStack
+
+browserstack.localIdentifier
+Specify an identifier for the local BrowserStack connection check https://www.browserstack.com/local-testing#multiple-connections
+
+browserstack.debug
+Generates screenshots at various steps in tests on BrowserStack
+
+browserstack.resolution
+Sets resolution of VM on BrowserStack
+
+browserstack.selenium_version
+browserstack.ie.noFlash
+Disable flash on Internet Explorer on BrowserStack
+
+browserstack.ie.driver
+Specify the Internet Explorer webdriver version on BrowserStack
+
+browserstack.ie.enablePopups
+Enable the popup blocker in Internet Explorer on BrowserStack
+
+------------
+webdriver {
+  driver = remote
+  remote {
+      url="http://localhost:4444/wd/hub"
+      driver=chrome
+  }
+}
+
+If you are using the serenity.properties file, the configuration would look like this:
+webdriver.driver = remote
+webdriver.remote.url = "http://localhost:4444/wd/hub"
+webdriver.remote.driver = chrome
+
+-----------------------------------------------------------------------------------
+Extending Serenity for Distributed Testing::
+implement the BeforeAWebdriverScenario and/or the AfterAWebDriverScenario interfaces (both are in the net.serenitybdd.core.webdriver.enhancers package).
+Serenity will execute BeforeAWebdriverScenario classes just before a driver instance is created, allowing you to add customised options to the driver capabilities.
+Any AfterAWebDriverScenario are executed at the end of a test, just before the driver is closed
+
+The BeforeAWebdriverScenario is used to enhance the DesiredCapabilities object that will be passed to the WebDriver instance when a new driver is created.
+The method call passes in the requested driver and the TestOutcome object, which contains information about the name and tags used for this test.
+It also passes in the EnvironmentVariables, which gives you access to the current environment configuration
+ 
+public class MyCapabilityEnhancer implements BeforeAWebdriverScenario {
+
+    @Override
+    public DesiredCapabilities apply(EnvironmentVariables environmentVariables,
+                                     SupportedWebDriver driver,
+                                     TestOutcome testOutcome,
+                                     DesiredCapabilities capabilities) {
+        capabilities.setCapability("name", testOutcome.getStoryTitle() + " - " + testOutcome.getTitle());
+        return capabilities;
+    }
+}
+
+The AfterAWebdriverScenario is called at the end of a test, just before the driver is closed, and once the result of the test is known.
+The test result (and other details) can be obtained from the TestOutcome parameter.
+This allows any last manipulations or checks to be performed on the driver, before the end of the test
+
+public class MyTestResultUpdater implements AfterAWebdriverScenario {
+    void apply(EnvironmentVariables environmentVariables,
+               TestOutcome testOutcome,
+               WebDriver driver) {
+       if ((driver == null) || (!RemoteDriver.isARemoteDriver(driver))) {
+           return;
+       }
+
+       Cookie cookie = new Cookie("testPassed",
+                                   testOutcome.isFailure() || testOutcome.isError() || testOutcome.isCompromised() ? "false" : "true");
+       driver.manage().addCookie(cookie);
+    }
+}
+
+Real Example :-
+https://github.com/serenity-bdd/serenity-core/tree/master/serenity-browserstack/src/main/java/net/serenitybdd/browserstack
+
+------------------------------------------------------------------------------------------------------------
+Serenity JUnit ::-
+The most important thing here is the SerenityRunner test runner. This class instruments any step libraries in your class,
+and ensures that the test results will be recorded and reported on by the Serenity reporters.
+
+@RunWith(SerenityRunner.class)
+public class WhenEarningFrequentFlyerStatus {
+
+    @Steps
+    TravellerStatusSteps travellerSteps;
+
+    @Test
+    @Title("Members earn Gold status after 5000 points (50000 km)")         
+    public void earnGoldAfter5000Points() {
+        // GIVEN
+        travellerSteps.a_traveller_joins_the_frequent_flyer_program();
+
+        // WHEN
+        travellerSteps.the_traveller_flies(50000);
+
+        // THEN
+        travellerSteps.traveller_should_have_a_status_of(Gold);
+    }
+}
+
+The @Title annotation lets you provide your own title for this test in the test reports.
+
+Serenity will manage your WebDriver instance, including opening the appropriate driver at the start of each test, 
+and shutting it down when the test is finished. You just need to provide a WebDriver variable in your test, as shown here:
+
+@RunWith(SerenityRunner.class)
+public class WhenSearchingOnGoogle {
+
+    @Managed                                                                
+    WebDriver driver;
+	....
+	....
+}
+
+The @Managed annotation also provides several useful parameters.
+
+The driver parameter lets you define what WebDriver driver you want to run these tests in.
+Possible values include firefox, chrome, iexplorer, phantomjs, appium, safari, edge and htmlunit :
+@Managed(driver="chrome")
+Note : Default value for driver is firefox.
+
+You can also get Serenity to open the browser at the start of the tests, and leave it open until all of the tests in this test case have been executed, using the uniqueSession parameter:
+@Managed(uniqueSession=true)
+Default value for uniqueSession is false
+
+To make Serenity BDD clear cookies for each test or never clear cookies you can use property clearCookies:
+@Managed(clearCookies=BeforeEachTest)
+Default value for clearCookies is BeforeEachTest, possible values are: BeforeEachTest, Never.
+
+----------
+#Pending Test ::
+	@Test
+    @Pending
+    public void dropsBackToSilverIfLessThan8000PointsEarnedInAYear() {
+    }
+
+#Ignore
+
+	@Test
+    @Ignore
+    public void earnPlatinumAfter10000Points() {
+	}
+	
+#Assuming 
+@Step
+    public void assuming_the_mainframe_is_available() {
+        assumeThat(mainframe(), is(ONLINE));                        
+    }
+If this check fails, the test will not be executed, and the test result will be reported as 'Ignored'.
+
+------------------------------------------------------------------------------------------------------------
+Data-Driven Test ::-
+In Serenity, you use the SerenityParameterizedRunner. This runner is very similar to the JUnit Parameterized test runner, 
+except that you use the @TestData annotation to provide test data, and you can use all of the other Serenity annotations
+(@Managed, @Steps and so on). This test runner will also generate proper serenity reports for the executed tests.
+
+@RunWith(SerenityParameterizedRunner.class)
+public class WhenEarningFrequentFlyerStatusUpgrades {
+
+    @TestData                                                   
+    public static Collection<Object[]> testData(){
+        return Arrays.asList(new Object[][]{
+                {0,     Bronze},
+                {9999,  Bronze},
+                {10000, Silver},
+                {49999, Silver},
+                {50000, Gold}
+        });
+    }
+
+    private final int kilometersTravelled;                      
+    private final Status expectedStatus;                        
+
+    public WhenEarningFrequentFlyerStatusUpgrades(int kilometersTravelled, 
+                                                  Status expectedStatus) { 
+        this.kilometersTravelled = kilometersTravelled;
+        this.expectedStatus = expectedStatus;
+    }
+
+    @Steps
+    TravellerStatusSteps travellerSteps;
+
+    @Test
+    public void shouldEarnNextStatusWithEnoughPoints() {                
+        // GIVEN
+        travellerSteps.a_traveller_joins_the_frequent_flyer_program();
+
+        // WHEN
+        travellerSteps.the_traveller_flies(kilometersTravelled);
+
+        // THEN
+        travellerSteps.traveller_should_have_a_status_of(expectedStatus);
+    }
+}
+
+Note :: You need a constructor with the parameters in the correct order for this to work.
+
+For slow-running tests, you may be able to speed up your tests using the @Concurrent annotation, as shown here:
+
+@RunWith(SerenityParameterizedRunner.class)
+@Concurrent                                                 
+public class WhenSearchingForDifferentTermsOnGoogle {
+
+    @Managed(driver = "chrome")
+    WebDriver driver;
+
+    GooglePage googlePage;
+
+    @TestData                                               
+    public static Collection<Object[]> testData(){
+        return Arrays.asList(new Object[][]{
+                {"cats"},
+                {"dogs"},
+                {"ferrets"},
+                {"rabbits"},
+                {"canaries"}
+        });
+    }
+}
+
+Run these tests in parallel
+Use test data from this method
+Inject test data into this field through the constructor
+
+@Concurrent(threads="4") Or, @Concurrent(threads="4x") -> More fine Tunning.
+
+----------------------
+Serenity lets you perform data-driven testing using test data in a CSV file.
+You store your test data in a CSV file (by default with columns separated by commas), with the first column acting as a header
+
+KILOMETERS TRAVELLED,   EXPECTED STATUS
+0,                      Bronze
+9999,                   Bronze
+10000,                  Silver
+49999,                  Silver
+50000,                  Gold
+
+Next, create a test class containing properties that match the columns in the test data.
+The class will also contain the @UseTestDataFrom annotation to indicate where to find the CSV file (this can either be a file on the classpath or a
+relative or absolute file path - putting the data set on the class path (e.g. in src/test/resources) makes the tests more portable).
+
+@RunWith(SerenityParameterizedRunner.class)
+@UseTestDataFrom(value="testdata/status-levels.csv")                
+public class WhenEarningFrequentFlyerStatusUpgradesUsingCSV {
+
+    private int kilometersTravelled;
+    private Status expectedStatus;
+
+    public void setKilometersTravelled(int kilometersTravelled) {
+        this.kilometersTravelled = kilometersTravelled;
+    }
+
+    public void setExpectedStatus(String expectedStatus) {
+        this.expectedStatus = Status.valueOf(expectedStatus);
+    }
+
+    @Qualifier
+    public String qualifier() {
+        return kilometersTravelled + "=>" + expectedStatus;
+    }
+    @Steps
+    TravellerStatusSteps travellerSteps;
+
+    @Test
+    public void reallyhouldEarnNextStatusWithEnoughPoints() {
+        // GIVEN
+        travellerSteps.a_traveller_joins_the_frequent_flyer_program();
+
+        // WHEN
+        travellerSteps.the_traveller_flies(kilometersTravelled);
+
+        // THEN
+        travellerSteps.traveller_should_have_a_status_of(expectedStatus);
+    }
+}
+
+You can also specify multiple file paths separated by path separators – colon, semi-colon or comma. For example:
+
+@UseTestDataFrom("test-data/simple-data.csv,test-data-subfolder/simple-data.csv")
+
+You can also configure an arbitrary directory using system property serenity.data.dir and then refer to it as $DATADIR variable in the annotation.
+@UseTestDataFrom("$DATADIR/simple-data.csv")
+
+You can use the separator attribute of the @UseTestDataFrom annotation to specify an alternative separator.
+@UseTestDataFrom(value="test-data/simple-semicolon-data.csv", separator=';')
+
+--------------------------------------------------------------------------------------------------------------------------
+Report Grouping :
+But Serenity also lets you group your tests in terms of features or user stories, in order to get a better high-level picture of the state of your application.
+The Requirements tab provides a high-level overview of your requirements.
+
+For this to work, you need to organize your JUnit tests into meaningful package name.
+For this to work properly, you need to tell Serenity the root package that you are using, and what terms you use for your requirements.
+serenity.test.root=net.serenitybdd.samples.junit.features
+
+Serenity will treat each directory/package name as a feature.
+
+You can provide extra information about stories and requirements in several ways.
+One is to use the @Narrative annotation in the test case, as shown here:
+Ex.
+@Narrative(text={"In order to choose the best flight for my travels",                      
+                 "As a traveller",
+                 "I want to be able to search for flights between specific destinations"})
+@RunWith(SerenityRunner.class)
+public class WhenSearchingFlights {
+
+    @Managed(driver = "chrome")
+    WebDriver driver;
+
+    @Steps
+    FlightSearchSteps theCustomer;
+}
+
+-> The Narrative Will Be Printed In Report As String Value.
+
+You can also add the @Narrative annotation to a package-info.java file In Each Package.
+This will add a narrative to the requirement represented by this package in the requirements reports, e.g.
+@Narrative(
+        text = {"Search-related functionality"}
+)
+package net.serenitybdd.samples.junit.features.searching;
+import net.thucydides.core.annotations.Narrative;
+
+----------------------------------------------------------------------------------------
+With JBehave ::-
+@RunWith(SerenityRunner.class)]
+@RunWith(JUnitReportingRunner.class)
+
+add Serenity Core & Serenity JBehave
+
+The JBehave tests are run via a JUnit runner. This makes it easier to run the tests both from within an IDE or as part of the build process.
+All you need to do is to extend the SerenityStories
+
+import net.serenitybdd.jbehave.SerenityStories;
+public class AcceptanceTests extends SerenityStories { -> Runner Class For JBehave-Serenity
+
+	}
+
+Serenity will run any JBehave stories that it finds in the default directory location.
+By convention, it will look for a stories folder on your classpath, so `src/test/resources/stories' is a good place to put your story files.
+
++ src
+  + test
+    + resources
+      + stories
+        + grow_potatoes                     [a capability]
+          + grow_organic_potatoes           [a feature]
+            - plant_organic_potatoes.story  [a story]
+            - dig_up_organic_potatoes.story [another story]
+          + grow_sweet_potatoes             [another feature]
+          ...
+		  
+the narrative section that can be placed at the start of a story to help provide some more context about that story 
+and the scenarios it contains. This narrative will appear in the Serenity reports, to help give product owners, testers 
+and other team members more information about the background and motivations behind each story.
+
+Narratives can be written in Asciidoc for richer formatting. Set the narrative.format property to asciidoc to allow Serenity to parse the narrative in asciidoc format.
+-----------------------------------------------------------------------------------------
+The @driver annotation lets you specify what WebDriver driver to use, eg.
+Adding items to the shopping cart
+
+Meta:
+@driver phantomjs
+
+Narrative:
+  In order to buy multiple items at the same time
+  As a buyer
+  I want to be able to add multiple items to the shopping cart
+
+Scenario: Should see total price including tax
+Given I have searched for items containing 'blue wool'
+And I have selected an item
+When I add the item to the shopping cart
+Then the item should appear in the cart
+And the shipping cost should be included in the total price
+-----------------------------------------------------------------------------------------------
+All web tests for one story can be run in a single browser window using either by setting the 'restart.browser.each.scenario' system property 
+or programmatically using runSerenity().inASingleSession() inside the JUnit runner. It is default behaving - to run all scenarios in same story in one browser.
+
+import net.serenitybdd.jbehave.SerenityStories;
+
+public class JBehaveTestCase extends SerenityStories {
+    public JBehaveTestCase() {
+      runSerenity().inASingleSession();
+    }
+}
+mvn verify -P %DEFAULTPROFILE% -Dlan=%LAN% -Dbrand=%BRAND% -Dtestenv=%TEST_ENV% -Dmetafilter=%META_FILTER% -Dwebdriver.driver=%DRIVER% -Dwebdriver.base.url="%BASE_URL%" 
+-Dplatform=%PLATFORM% -Dtestrun=%TEST_RUN% -Dappium.platformName=%AppiumPlatformName% -Dappium.browserName=%AppiumBrowserName% -Dappium.deviceName=%AppiumDeviceName% 
+-DIsDeviceTab=%IsDeviceTab% -DWidthDevice=%WidthDevice% -DHeightDevice=%HeightDevice% -DIsResponsive=%IsResponsive%
+----------------------------------------------------------------------------------------------------
+Serenity With Cucumber ::-
+Serenity Core + Serenity Cucumber Or Serenity Cucumber4
+
+you need to specify the `thucydides.requirements.dir property in your serenity.properties (or thucydides.properties) file to point to the root requirements directory:
+thucydides.requirements.dir=src/test/resources/net/serenity_bdd/samples/etsy/features
+
+When you run the tests with Serenity, you use the 'CucumberWithSerenity' test runner
+RunWith(CucumberWithSerenity.class)
+
+import cucumber.api.CucumberOptions;
+import net.serenitybdd.cucumber.CucumberWithSerenity;
+import org.junit.runner.RunWith;
+
+@RunWith(CucumberWithSerenity.class)
+@CucumberOptions(features="src/test/resources/features/search/search_by_keyword.feature")
+public class SearchByKeyword {	-> Runner Class
+
+	}
+
+--------------
+
+public class SearchByKeywordStepDefinitions {
+    @Steps
+    BuyerSteps buyer;
+
+    @Given("I want to buy (.*)")
+    public void buyerWantsToBuy(String article) {
+        buyer.opens_etsy_home_page();
+    }
+
+    @When("I search for items containing '(.*)'")
+    public void searchByKeyword(String keyword) {
+        buyer.searches_for_items_containing(keyword);
+    }
+}
+
+The @Steps annotation tells Serenity that this variable is a Step Library.
+
+------------------------------------------------------------------------------------------------------
+Rest Assured ::
+It is provided tight integration with well known Rest Assured, with some improvements and advanced reporting. All what you need is use in 
+import instead of RestAssured - SerenityRest, and that’s all!!
+All Rest Assured tests are valid tests for Serenity BDD. You can use all contractions like given-when-then or expect-when-then, initialise some query parameters, and so on.
+
+...
+    @Step
+    public void whenIAddThePetToTheStore() {
+        for (Pet pet : pets) {
+            int id = Math.abs(new Random().nextInt());
+            Map<String, Object> jsonAsMap = new HashMap<>();
+            jsonAsMap.put("id", id);
+            jsonAsMap.put("name", pet.getName());
+            jsonAsMap.put("status", pet.getStatus());
+            jsonAsMap.put("photoUrls", new ArrayList<>(Arrays.asList()));
+
+            given().contentType("application/json")
+                    .content(jsonAsMap).log().body()
+                    .baseUri("http://petstore.swagger.io")
+                    .basePath("v2/pet")
+            .when().post();
+
+            pet.setId(id);
+
+        }
+    }
+or
+
+...
+    @Step
+    public void thenPetShouldBeAvailable() {
+        for (Pet pet : pets) {
+            expect().that().statusCode(200)
+                    .and().body("name", equalTo(pet.getName())).when()
+                    .get("http://petstore.swagger.io/v2/pet/{id}", pet.getId());
+        }
+    }
+...
+	
+		@Step
+        def getById(final String url) {
+            rest().get("$url/{id}", 1000);
+        }
+
+        @Step
+        def thenCheckOutcome() {
+            then().body("Id", Matchers.anything())
+        }
+------------------
+For easy configuration and resetting rest configuration you can use RestConfigurationRule. All Configuration action described in rule 
+will executed before test and after test will be executed reset.
+
+...
+    @Rule
+    def RestConfigurationRule rule = new RestConfigurationRule(new RestConfigurationAction() {
+        @Override
+        void apply() {
+            SerenityRest.setDefaultBasePath(value)
+        }
+    })
+
+-----------------------------------------------------------------------------------------------------
+BDD Screenplay ::
+
+In the Screenplay Pattern, we call a user interacting with the system an Actor. Actors are at the heart of the Screenplay Pattern 
+(see The Screenplay Pattern uses an actor-centric model). Each actor has a certain number of Abilities, such as the ability 
+to browse the web or to query a restful web service. Actors can also perform Tasks such as adding an item to the Todo list.
+To achieve these tasks, they will typically need to interact with the application, such as by entering a value into a field 
+or by clicking on a button. We call these interactions Actions. Actors can also ask Questions about the state of the application,
+ssuch as by reading the value of a field on the screen or by querying a web service.
+
+ACTOR
+QUESTION
+ABILITY
+TASK
+ACTION
+WEB PAGE
+
+In Serenity, creating an actor is as simple as creating an instance of the Actor class and providing a name:
+Actor james = Actor.named("James");
+
+Serenity BDD plays well with Selenium WebDriver, and is happy to manage the browser lifecycle for you. All you need to do is to use the 
+@Managed annotation with a WebDriver member variable, as shown here:
+
+@Managed
+WebDriver hisBrowser;
+We can then let James use this browser like this:
+
+	james.can(BrowseTheWeb.with(hisBrowser));
+
+Each of the actor’s abilities is represented by an Ability class (in this case, BrowseTheWeb) which keeps track of the things the actor needs to perform this ability 
+(for example, the WebDriver instance used to interact with the browser). Keeping the things an actor can do (browse the web, invoke a web service…​)
+
+To add a new custom ability, you just need to implement a new Ability class.
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+In Serenity, you can add evidence in the form of a String or the contents of a file. For example, you might record the results of a SQL query to 
+demonstrate that a database contains the expected results, or record the full version of a generated XML report when you only make assertions on a few key fields.
+
+You can do this using the Serenity.recordReportData() method:
+
+    sqlQueryResult = ...
+    Serenity.recordReportData().withTitle("Database evidence").andContents(sqlQueryResult);
+	
+This method lets you record data from a String or from a file. To get data from a file, use the fromFile() method:
+	Path report = ...
+    Serenity.recordReportData().withTitle("Generated Report").fromFile(report);
+
+--------------------------------------------------------
+Emailable Report :-
+<plugin>
+    <groupId>net.serenity-bdd.maven.plugins</groupId>
+    <artifactId>serenity-maven-plugin</artifactId>
+    <version>${serenity.maven.version}</version>
+    <dependencies>
+        <dependency> 
+            <groupId>net.serenity-bdd</groupId>
+            <artifactId>serenity-emailer</artifactId>
+            <version>${serenity.version}</version>
+        </dependency>
+    </dependencies>
+    <configuration>
+        <tags>${tags}</tags>
+        <reports>email</reports> 
+    </configuration>
+    <executions>
+        <execution>
+            <id>serenity-reports</id>
+            <phase>post-integration-test</phase>
+            <goals>
+                <goal>aggregate</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
+
+If you are using Maven, you can also generate these reports directly using the reports goal and by passing the serenity.reports system property:
+mvn serenity:reports -Dserenity.reports=email
+
+---------------
+You can add custom fields to your report by setting system properties with the special prefix report.customfields.
+These can go in your serenity.properties file in the root directory of your project, or you can pass them in as command-line options.
+
+For example, you could add the following properties to your serenity.properties file.
+report.customfields.environment = Integration
+report.customfields.ApplicationVersion = 1.2.3
+
+We can also access any system variables that Java has access to. For example, we could include the name of the user who ran the test run with the ${USER} system variable:
+report.customfields.user = ${USER}
+
+Not all system properties are available to Java. For example, on Linux systems, the $HOST variable gives the name of the local machine.
+We could include this in our report by adding the following property:
+report.customfields.host = ${HOST}
+However, since this variable is not available to Java, we would need to pass it to Serenity from the command line, like this:
+mvn serenity:aggregate -DHOST=$HOST
+
+By default, the fields will appear in an arbitrary order. You can force the fields to appear in a pre-determined order using the report.customfields.order field:
+report.customfields.order=ApplicationVersion,environment,user,host
+
+A complete example of these properties and their various usages is shown here:
+report.customfields.ApplicationVersion = 1.2.3
+report.customfields.environment = ${environment}
+report.customfields.user = ${USER}
+report.customfields.host = ${HOST}
+report.customfields.order=ApplicationVersion,environment,user,host
+
+You can include a link back to your Serenity report, and links to the individual scenario results, by setting the serenity.report.url property. 
+You can do this in the serentiy.properties file (if it is fixed), or pass it in from the command line (if you are pointing the the reports for a specific build, for example):
+serenity.report.url=http://my.jenkins.server:8080/job/my-project/serenity-reports/
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+You can mark a test as a manual test using the @manual tag, e.g.
+@Manual
+Scenario: Monitoring a new low risk customer
+  Given Joe is a new customer
+  And Joe is considered a low risk customer
+  When he is onboarded
+  Then his account should be scheduled for review in 3 months time
+  
+@manual:failed
+Scenario: Monitoring a new low risk customer
+  Failure:Joe is showing as a high-risk customer
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+****************************************************************************************************************************************************
+----------------------------------------------------------------------------------------------------------------------------------------------------
+Thucydides Tutorial ::-
+
+To use the Serenity test session, which is essentially a hash map where you can store variables for the duration of a single test.
+Variables in the Serenity test session are available in any step definition class.
+The following example shows a simple web test:
+
+public class FlightSearchSteps extends ScenarioSteps {
+
+ FlightSearchPage flightSearchPage;
+ 
+ FlightSearchResultsPage flightSearchResultsPage;
+ 
+ FlightDetailsPage flightDetailsPage;
+ 
+ @Step("A customer searchers for flights between {0} and {1}") public public void void searches_for_flights_between(String departure, String destination) {
+  
+  Serenity.setSessionVariable("destinationCity").to(destination); // Setting A Value In Variable destinationCity
+ 
+ flightSearchPage.searchForFlightsFrom(departure).to(destination);
+ }
+ 
+ @Step public public void void view_flight_details_for_flight(int int flightNumber) {
+ 
+  flightSearchResultsPage.selectFlightNumber(flightNumber);
+ }
+ 
+ @Step public public void void should_see_the_destination_city_in_the_summary() {
+ 
+  String expectedDestinationCity = Serenity.sessionVariableCalled("destinationCity").toString(); // Extracting Value From Variable
+  
+  assertThat(flightDetailsPage.getDestinationCity()).isEqualTo(expectedDestinationCity);
+ }
+}
+
+------------------------------------------------------------------------------------------------------------------------------
+Maven ::
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <groupId>net.serenity_bdd.samples.junit</groupId>
+   <artifactId>junit-quick-start</artifactId>
+   <version>0.0.1-SNAPSHOT</version>
+   <packaging>jar</packaging>
+   <name>Serenity JUnit Quick Start Project</name>
+   <properties>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <serenity.version>1.0.47</serenity.version>
+      <serenity.maven.version>1.0.47</serenity.maven.version>
+      <webdriver.driver>firefox</webdriver.driver>
+   </properties>
+   <dependencies>
+      <dependency>
+         <groupId>net.serenity-bdd</groupId>
+         <artifactId>core</artifactId>
+         <version>${serenity.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>net.serenity-bdd</groupId>
+         <artifactId>serenity-junit</artifactId>
+         <version>${serenity.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.slf4j</groupId>
+         <artifactId>slf4j-simple</artifactId>
+         <version>1.6.1</version>
+      </dependency>
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+         <version>4.11</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.assertj</groupId>
+         <artifactId>assertj-core</artifactId>
+         <version>1.7.0</version>
+         <scope>test</scope>
+      </dependency>
+   </dependencies>
+   <build>
+      <plugins>
+         <plugin>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <version>2.18</version>
+            <configuration>
+               <includes>
+                  <include>**/features/**/When*.java</include>
+               </includes>
+               <systemProperties>
+                  <webdriver.driver>${webdriver.driver}</webdriver.driver>
+                  <surefire.rerunFailingTestsCount>${surefire.rerunFailingTestsCount}</surefire.rerunFailingTestsCount>
+                  <surefire.rerunFailingTestsCount>${surefire.rerunFailingTestsCount}</surefire.rerunFailingTestsCount>
+               </systemProperties>
+			   <testFailureIgnore>true</testFailureIgnore>
+            </configuration>	
+         </plugin>
+         <plugin>
+            <groupId>net.serenity-bdd.maven.plugins</groupId>
+            <artifactId>serenity-maven-plugin</artifactId>
+            <version>${serenity.maven.version}</version>
+            <dependencies>
+               <dependency>
+                  <groupId>net.serenity-bdd</groupId>
+                  <artifactId>core</artifactId>
+                  <version>${serenity.version}</version>
+               </dependency>
+            </dependencies>
+            <executions>
+               <execution>
+                  <id>serenity-reports</id>
+                  <phase>post-integration-test</phase>
+                  <goals>
+                     <goal>aggregate</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
+      </plugins>
+   </build>
+</project>
+
+
+
+Normal JUnit tests run from Maven need to start or end with Test. But for acceptance tests, a more flexible strategy is better,
+as it makes it easier to name test cases after scenarios or stories. In the pom.xml file shown above, we configure
+the maven-failsafe-plugin to run all of the tests in the junit directory, regardless of how they are named
+
+Tip: It is possible to use a Junit Run Configuration to run a Serenity Testrunner. This will not generate an aggregate report.
+If you find your index.html file is missing, check that you are using a Maven build Run Configuration with goal verify to run your test and get the aggregate report.
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
+The @driver annotation lets you specify what WebDriver driver to use, eg.
+
+Adding items to the shopping cart
+Meta: @driver phantomjs
+Narrative:  In order to buy multiple items at the same time  As a buyer  I want to be able to add multiple items to the shopping cart
+Scenario: Should see total price including tax Given I have searched for local items containing 'wool' 
+
+
+All web tests for one story can be run in a single browser window using either by setting the
+restart.browser.each.scenario system property or programmatically using runSerenity().inASingleSession() inside the JUnit runner
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+Cucumber ::
+@RunWith(CucumberWithSerenity.class)
+@CucumberOptions(features="src/test/resources/features/search/search_by_keyword.feature")
+public class Any{}
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+#Running With Only JBehave :-
+1) 1st Way :-
+public class JbehaveRunner2 extends JUnitStories {
+
+	private final CrossReference xref = new CrossReference();
+
+	public JbehaveRunner2() {
+
+		configuredEmbedder().embedderControls().doGenerateViewAfterStories(true).doIgnoreFailureInStories(false)
+				.doIgnoreFailureInView(true).doVerboseFailures(true).useThreads(2).useStoryTimeouts("60000").useStoryTimeoutInSecs(30000)
+				.useStoryTimeoutInSecsByPath("40000");
+
+		configuredEmbedder().useEmbedderControls(new PropertyBasedEmbedderControls());
+	}
+
+	@Override
+	public Configuration configuration() {
+
+		Class<? extends Embeddable> embeddableClass = this.getClass();
+
+		
+		 Properties viewResources = new Properties();
+		 viewResources.put("decorateNonHtml", "false");
+//		viewResources.put("reports", "ftl/jbehave-reports-with-totals.ftl");
+		 
+// 		Start from default ParameterConverters instance
+		ParameterConverters parameterConverters = new ParameterConverters();
+		
+// 		factory to allow parameter conversion and loading from external resources (used by StoryParser too)
+		ExamplesTableFactory examplesTableFactory = new ExamplesTableFactory(new LocalizedKeywords(), new LoadFromClasspath(embeddableClass),
+				parameterConverters, new ParameterControls(), new TableTransformers());
+		
+// 		add custom converters
+		parameterConverters.addConverters(new DateConverter(new SimpleDateFormat("yyyy-MM-dd")), new ExamplesTableConverter(examplesTableFactory));
+
+		return new MostUsefulConfiguration()
+						.useStoryLoader(new LoadFromClasspath(embeddableClass))
+						.useStoryParser(new RegexStoryParser(examplesTableFactory))
+						.useStoryReporterBuilder(new StoryReporterBuilder()
+						.withCodeLocation(CodeLocations.codeLocationFromClass(embeddableClass)).withDefaultFormats()
+						.withRelativeDirectory("my-output")
+						.withViewResources(viewResources)
+						.withFormats(Format.CONSOLE, Format.TXT, Format.HTML)
+						.withFailureTrace(true)
+						.withFailureTraceCompression(true).withCrossReference(xref))
+						.useParameterConverters(parameterConverters)
+						.usePendingStepStrategy(new FailingUponPendingStep())
+						.useStepMonitor(new PrintStreamStepMonitor()) // default is SilentStepMonitor()
+						.doDryRun(false)
+// 				 		use '%' instead of '$' to identify parameters
+						.useStepPatternParser(new RegexPrefixCapturingPatternParser("%")).useStepMonitor(xref.getStepMonitor());
+	}
+
+	@Override
+	public InjectableStepsFactory stepsFactory() {
+		return new InstanceStepsFactory(configuration(), new JbehaveImplementationSteps());
+	}
+
+	@Override
+	protected List<String> storyPaths() {
+		// Specify story paths as URLs
+		return new StoryFinder().findPaths(CodeLocations.codeLocationFromClass(this.getClass()).getFile(),
+				Arrays.asList("**/*.story"), Arrays.asList(""));
+	}
+}
+
+2) Second Way :-
+
+@RunWith(AnnotatedEmbedderRunner.class)
+@Configure(storyLoader = MyStoryLoader.class, storyReporterBuilder = MyReportBuilder.class, parameterConverters = { MyDateConverter.class })
+@UsingEmbedder(embedder = Embedder.class, generateViewAfterStories = true, ignoreFailureInStories = true, ignoreFailureInView = true, storyTimeouts = "1d", threads = 2)
+@UsingSteps(packages = { "jbehave", "my.other.steps" }, matchingNames = ".*Steps", notMatchingNames = ".*SkipSteps") // instances ={ JbehaveImpl.class },
+public class JBehaveJunit implements Embeddable {
+
+	private Embedder embedder;
+
+	public void useEmbedder(Embedder embedder) {
+		this.embedder = embedder;
+	}
+
+	@Test
+	public void run() {
+		embedder.runStoriesAsPaths(
+				new StoryFinder().findPaths(CodeLocations.codeLocationFromClass(this.getClass()).getFile(),
+						Arrays.asList("**/*.story"), Arrays.asList("")));
+	}
+
+	public static class MyStoryControls extends StoryControls {
+		public MyStoryControls() {
+			doDryRun(false);
+			doSkipScenariosAfterFailure(false);
+		}
+	}
+
+	public static class MyStoryLoader extends LoadFromClasspath {
+		public MyStoryLoader() {
+			super(JBehaveJunit.class.getClassLoader());
+		}
+	}
+
+	public static class MyReportBuilder extends StoryReporterBuilder {
+		public MyReportBuilder() {
+			this.withFormats(org.jbehave.core.reporters.Format.CONSOLE,
+			org.jbehave.core.reporters.Format.TXT,
+			org.jbehave.core.reporters.Format.HTML,
+			org.jbehave.core.reporters.Format.XML).withDefaultFormats();
+		}
+	}
+
+	public static class MyRegexPrefixCapturingPatternParser extends RegexPrefixCapturingPatternParser {
+		public MyRegexPrefixCapturingPatternParser() {
+			super("%");
+		}
+	}
+
+	public static class MyDateConverter extends DateConverter {
+		public MyDateConverter() {
+			super(new SimpleDateFormat("yyyy-MM-dd"));
+		}
+	}
+}
+--------------------------------------------------------------------------------------------------------------------------------------------
+#Running JBehave With Serenity
+@RunWith(JUnitReportingRunner.class) Or @RunWith(SerenityReportingRunner.class)
+public class TestRunner extends SerenityStories {
+	
+	public static String url = "https://qa.napapijri.co.uk/";
+	public static String browser = "chrome";
+
+	public static String story="someting.story";
+	
+	public TestRunner() throws IOException {
+		
+		SerenitySystemProperties.getProperties().setValue(ThucydidesSystemProperty.WEBDRIVER_BASE_URL, url);
+		SerenitySystemProperties.getProperties().setValue(ThucydidesSystemProperty.WEBDRIVER_DRIVER, "chrome");
+		
+		List<String> metaFilters = new ArrayList<>();
+		metaFilters.add("+krishna");
+		configuredEmbedder().useMetaFilters(metaFilters);
+		
+		EmbedderControls embeedCtrl = configuredEmbedder().embedderControls().doBatch(false);
+		embeedCtrl.useStoryTimeouts("1d");
+		
+		findStoriesCalled(story); // Or Regex Of The Stories.
+	}
+}
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
